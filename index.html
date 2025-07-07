@@ -1,0 +1,706 @@
+5:07 PM
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SM Incentive Calculator - MLAP</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            animation: slideUp 0.6s ease-out;
+        }
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .header {
+            background: linear-gradient(135deg, #6A0DAD, #E91E63);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2.5em;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        .form-container {
+            padding: 40px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        .input-group {
+            position: relative;
+        }
+        
+        .input-group .label-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .input-group label {
+            font-weight: 600;
+            color: #555;
+            font-size: 0.95em;
+            display: block;
+            margin-bottom: 8px;
+        }
+        
+        .input-group .label-container label {
+            margin-bottom: 0;
+        }
+
+        .info-icon {
+            display: inline-block;
+            margin-left: 8px;
+            background-color: #6A0DAD;
+            color: white;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 18px;
+            font-size: 12px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .input-group select,
+        .input-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        .input-group select.invalid,
+        .input-group input.invalid {
+            border-color: #e74c3c;
+        }
+        .input-group select:focus,
+        .input-group input:focus {
+            outline: none;
+            border-color: #6A0DAD;
+            box-shadow: 0 0 0 3px rgba(106, 13, 173, 0.1);
+        }
+        .input-group input[readonly] {
+            background: #f8f9fa;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+        .required {
+            color: #e74c3c;
+        }
+        .calculate-btn, .recalculate-btn {
+            width: 100%;
+            padding: 16px;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .calculate-btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+        }
+        .recalculate-btn {
+            background: linear-gradient(135deg, #0d6efd, #0a58ca);
+            margin-top: 20px;
+            display: none; 
+        }
+        
+        .recalculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(13, 110, 253, 0.3);
+        }
+        .calculate-btn:active, .recalculate-btn:active {
+            transform: translateY(0);
+        }
+        .results {
+            margin-top: 30px;
+            opacity: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: opacity 0.5s ease, max-height 0.6s ease, transform 0.5s ease;
+            transform: translateY(20px);
+        }
+        
+        .results.show {
+            opacity: 1;
+            transform: translateY(0);
+            max-height: 2000px;
+        }
+        .results.show .recalculate-btn {
+            display: block; 
+        }
+        .results h3 {
+            color: #6A0DAD;
+            margin-bottom: 20px;
+            font-size: 1.6em;
+            text-align: center;
+        }
+        
+        .result-block {
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid #E91E63;
+            overflow: hidden;
+        }
+        .result-item-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .result-item-main:hover {
+            background-color: #f8f9fa;
+        }
+        .result-item-main .label {
+            font-size: 1.1em;
+            color: #444;
+            font-weight: 600;
+        }
+        .result-item-main .value {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #6A0DAD;
+            margin-left: auto;
+            margin-right: 20px;
+        }
+        .toggle-icon {
+            font-size: 1em;
+            color: #6A0DAD;
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        .result-block.expanded .toggle-icon {
+            transform: rotate(180deg);
+        }
+        .breakdown-details, .additional-breakdown {
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            padding: 0 20px;
+            transition: all 0.4s ease-in-out;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            font-size: 0.9em;
+            color: #555;
+            line-height: 1.5;
+        }
+        
+        .result-block.expanded .breakdown-details, 
+        .result-block.expanded .additional-breakdown {
+            max-height: 500px;
+            opacity: 1;
+            padding: 15px 20px;
+        }
+        
+        .additional-breakdown h4 {
+            color: #495057;
+            margin-bottom: 10px;
+            font-size: 1em;
+            font-weight: 600;
+        }
+        .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.95em;
+        }
+        .breakdown-item .item-label {
+            color: #495057;
+        }
+        .breakdown-item .item-value {
+            font-weight: 600;
+            color: #333;
+        }
+        .total-incentive {
+            background: linear-gradient(135deg, #6A0DAD, #E91E63);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 25px;
+        }
+        .total-incentive .label {
+            font-size: 1.1em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+        .total-incentive .value {
+            font-size: 2.2em;
+            font-weight: 700;
+        }
+        .error {
+            color: #e74c3c;
+            font-size: 0.9em;
+            margin-top: 5px;
+            height: 1em;
+        }
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .header h1 {
+                font-size: 2em;
+            }
+            .form-container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>SM Incentive Calculator - MLAP</h1>
+            <p>Calculate incentives with precision</p>
+        </div>
+        <div class="form-container">
+            <form id="incentiveForm" novalidate>
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label for="designation">Designation <span class="required">*</span></label>
+                        <select id="designation" required>
+                            <option value="">Select Designation</option>
+                            <option value="SM">SM</option>
+                            <option value="SSM">SSM</option>
+                        </select>
+                        <div class="error"></div>
+                    </div>
+                    <div class="input-group">
+                        <label for="tier">Tier <span class="required">*</span></label>
+                        <select id="tier" required>
+                            <option value="">Select Tier</option>
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                            <option value="C">C</option>
+                        </select>
+                        <div class="error"></div>
+                    </div>
+                    <div class="input-group">
+                        <label for="mlapTarget">MLAP Disbursement Target (Lakhs)</label>
+                        <input type="number" id="mlapTarget" readonly>
+                        <div class="error"></div>
+                    </div>
+                    <div class="input-group">
+                        <label for="logins">Number of Logins <span class="required">*</span></label>
+                        <input type="number" id="logins" min="0" max="100" placeholder="Enter number of logins" required>
+                        <div class="error"></div>
+                    </div>
+                    <div class="input-group">
+                        <div class="label-container">
+                           <label for="mlapDisbursement">MLAP Disbursement (Lakhs) <span class="required">*</span></label>
+                           <div class="info-icon" data-info="Kindly enter the total MLAP disbursement amount in Lakhs, excluding any cancelled amounts.">ⓘ</div>
+                        </div>
+                        <input type="number" id="mlapDisbursement" min="0" step="0.01" placeholder="Enter MLAP disbursement" required>
+                        <div class="error"></div>
+                    </div>
+                    <div class="input-group">
+                        <div class="label-container">
+                            <label for="coLendingDisbursement">Co-Lending Disbursement (Lakhs) <span class="required">*</span></label>
+                            <div class="info-icon" data-info="Kindly enter the total Co-Lending disbursement amount in Lakhs, excluding any cancelled amounts. 20% of this value may be considered for incentives if MLAP target achievement is over 85%.">ⓘ</div>
+                        </div>
+                        <input type="number" id="coLendingDisbursement" min="0" step="0.01" placeholder="Enter co-lending disbursement" required>
+                        <div class="error"></div>
+                    </div>
+                    <div class="input-group">
+                        <label for="disbursementConsidered">Disbursement Considered (Lakhs)</label>
+                        <input type="number" id="disbursementConsidered" readonly>
+                        <div class="error"></div>
+                    </div>
+                    <div class="input-group">
+                        <label for="targetAchievement">Target Achievement (%)</label>
+                        <input type="number" id="targetAchievement" readonly>
+                        <div class="error"></div>
+                    </div>
+                    <div class="input-group">
+                        <label for="weightedPF">Weighted Average PF (%) <span class="required">*</span></label>
+                        <input type="number" id="weightedPF" min="0" max="100" step="0.01" placeholder="Enter weighted PF %" required>
+                        <div class="error"></div>
+                    </div>
+                    <div class="input-group">
+                        <label for="weightedInsurance">Weighted Insurance Premium (%) <span class="required">*</span></label>
+                        <input type="number" id="weightedInsurance" min="0" max="100" step="0.01" placeholder="Enter insurance premium %" required>
+                        <div class="error"></div>
+                    </div>
+                    <div class="input-group">
+                        <label for="financialBounce">3-Month Financial Bounce (%) <span class="required">*</span></label>
+                        <input type="number" id="financialBounce" min="0" max="100" step="0.01" placeholder="Enter financial bounce %" required>
+                        <div class="error"></div>
+                    </div>
+                    <div class="input-group">
+                        <label for="cancellationAmount">Cancellation Amount (Lakhs) <span class="required">*</span></label>
+                        <input type="number" id="cancellationAmount" min="0" step="0.01" placeholder="Enter cancellation amount" required>
+                        <div class="error"></div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="weightedROI">Weighted ROI (%) <span class="required">*</span></label>
+                        <input type="number" id="weightedROI" min="0" max="100" step="0.01" placeholder="Enter weighted ROI %" required>
+                        <div class="error"></div>
+                    </div>
+                </div>
+                <button type="submit" class="calculate-btn">Calculate Incentives</button>
+            </form>
+            <div class="results" id="results">
+                <h3>Incentive Breakdown</h3>
+                
+                <div class="result-block">
+                    <div class="result-item-main">
+                        <span class="label">Target Achievement</span>
+                        <span class="value" id="achievementDisplay">-</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="breakdown-details" id="achievementDetails"></div>
+                </div>
+                <div class="result-block">
+                    <div class="result-item-main">
+                        <span class="label">Base Incentive</span>
+                        <span class="value" id="baseIncentive">₹0</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="breakdown-details" id="baseIncentiveDetails"></div>
+                </div>
+                <div class="result-block">
+                    <div class="result-item-main">
+                        <span class="label">Login Incentive</span>
+                        <span class="value" id="loginIncentive">₹0</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="breakdown-details" id="loginIncentiveDetails"></div>
+                </div>
+                <div class="result-block">
+                    <div class="result-item-main">
+                        <span class="label">Additional Incentives & Deductions</span>
+                        <span class="value" id="additionalIncentive">₹0</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="additional-breakdown" id="additionalBreakdownDetails">
+                        <h4>Component Breakdown:</h4>
+                        <div class="breakdown-item">
+                            <span class="item-label">Processing Fee Incentive:</span>
+                            <span class="item-value" id="pfIncentive">₹0</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span class="item-label">Insurance Premium Incentive:</span>
+                            <span class="item-value" id="insuranceIncentive">₹0</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span class="item-label">Financial Bounce Impact:</span>
+                            <span class="item-value" id="bounceImpact">₹0</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span class="item-label">Cancellation Impact:</span>
+                            <span class="item-value" id="cancellationImpact">₹0</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span class="item-label">ROI Impact:</span>
+                            <span class="item-value" id="roiImpact">₹0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="total-incentive">
+                    <div class="label">Total Gross Incentive</div>
+                    <div class="value" id="totalIncentive">₹0</div>
+                </div>
+                
+                <button type="button" id="recalculateBtn" class="recalculate-btn">Recalculate Incentive</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Core calculation logic
+        const targets = {
+            SM: { A: 90, B: 70, C: 60 },
+            SSM: { A: 100, B: 80, C: 70 }
+        };
+        function updateTarget() {
+            const designation = document.getElementById("designation").value;
+            const tier = document.getElementById("tier").value;
+            const targetField = document.getElementById("mlapTarget");
+            if (designation && tier && targets[designation] && targets[designation][tier]) {
+                targetField.value = targets[designation][tier];
+            } else {
+                targetField.value = "";
+            }
+            updateDisbursementConsidered();
+        }
+        function updateDisbursementConsidered() {
+            const mlapDisbursement = parseFloat(document.getElementById("mlapDisbursement").value) || 0;
+            const coLendingDisbursement = parseFloat(document.getElementById("coLendingDisbursement").value) || 0;
+            const mlapTarget = parseFloat(document.getElementById("mlapTarget").value) || 0;
+            let disbursementConsidered = 0;
+            let targetAchievement = 0;
+            if (mlapTarget > 0) {
+                const mlapAchievement = (mlapDisbursement / mlapTarget) * 100;
+                if (mlapAchievement >= 85) {
+                    disbursementConsidered = mlapDisbursement + (coLendingDisbursement * 0.2);
+                } else {
+                    disbursementConsidered = mlapDisbursement;
+                }
+                targetAchievement = (disbursementConsidered / mlapTarget) * 100;
+            }
+            document.getElementById("disbursementConsidered").value = disbursementConsidered.toFixed(2);
+            document.getElementById("targetAchievement").value = targetAchievement.toFixed(2);
+        }
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+        function clearErrors() {
+            document.querySelectorAll('.error').forEach(el => el.textContent = '');
+            document.querySelectorAll('.invalid').forEach(el => el.classList.remove('invalid'));
+        }
+        function validateForm() {
+            clearErrors();
+            let isValid = true;
+            const requiredFields = document.querySelectorAll('#incentiveForm [required]');
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    isValid = false;
+                    field.classList.add('invalid');
+                    let errorDiv = field.closest('.input-group').querySelector('.error');
+                    if (errorDiv) {
+                        errorDiv.textContent = 'This field is required.';
+                    }
+                }
+            });
+            return isValid;
+        }
+        function calculateBaseIncentive(targetAchievement, disbursementConsidered) {
+            if (targetAchievement < 85) {
+                return 0;
+            }
+            const disbursementInRupees = disbursementConsidered * 100000;
+            const minimumIncentive = 8000;
+            if (targetAchievement >= 85 && targetAchievement < 100) {
+                return minimumIncentive;
+            }
+            if (targetAchievement >= 100 && targetAchievement < 120) {
+                return Math.max(disbursementInRupees * 0.001, minimumIncentive);
+            }
+            if (targetAchievement >= 120 && targetAchievement < 150) {
+                return Math.max(disbursementInRupees * 0.002, minimumIncentive);
+            }
+            if (targetAchievement >= 150 && targetAchievement < 175) {
+                return Math.max(disbursementInRupees * 0.0025, minimumIncentive);
+            }
+            if (targetAchievement >= 175) {
+                return Math.max(disbursementInRupees * 0.003, minimumIncentive);
+            }
+            return 0;
+        }
+        function calculateLoginIncentive(logins) {
+            if (logins >= 8) return 5000;
+            if (logins === 7) return 3500;
+            if (logins === 6) return 2500;
+            return 0;
+        }
+        // --- MODIFIED: Additional Incentive Logic ---
+        function calculateAdditionalIncentive(baseIncentive, weightedPF, weightedInsurance, financialBounce, cancellationAmount, weightedROI, disbursementConsidered, targetAchievement, mlapDisbursement) {
+            let pfIncentive = 0, insuranceIncentive = 0, bounceImpact = 0, cancellationImpact = 0, roiImpact = 0;
+            
+            // UPDATED: Uses mlapDisbursement
+            const pfDiff = weightedPF - 1.75;
+            if (pfDiff > 0) pfIncentive = 0.15 * pfDiff * mlapDisbursement * 1000;
+            
+            // UPDATED: Uses mlapDisbursement
+            const insuranceDiff = weightedInsurance - 2.50;
+            if (insuranceDiff > 0) insuranceIncentive = 0.15 * insuranceDiff * mlapDisbursement * 1000;
+            if (financialBounce === 0) bounceImpact = baseIncentive * 0.2;
+            else bounceImpact = -(baseIncentive * financialBounce / 100);
+            // UPDATED: Cancellation logic with new multiplier and existing cap
+            if (baseIncentive > 0) {
+                const potentialDeduction = -(cancellationAmount * 100000 * 0.0002);
+                cancellationImpact = Math.max(potentialDeduction, -baseIncentive);
+            }
+            // UPDATED: ROI Logic with new condition (>= 50) and new bonus tiers
+            if (targetAchievement >= 50) {
+                if (weightedROI < 15.00) {
+                    roiImpact = -(baseIncentive * 0.2);
+                } else if (weightedROI < 15.20) {
+                    roiImpact = -(baseIncentive * 0.1);
+                } else if (weightedROI > 16.00) {
+                    roiImpact = 0.10 * (weightedROI - 16.00) * disbursementConsidered * 1000;
+                } else if (weightedROI > 15.60) {
+                    roiImpact = 0.05 * (weightedROI - 15.60) * disbursementConsidered * 1000;
+                }
+            }
+            return { pfIncentive, insuranceIncentive, bounceImpact, cancellationImpact, roiImpact, total: pfIncentive + insuranceIncentive + bounceImpact + cancellationImpact + roiImpact };
+        }
+        function calculateIncentives(event) {
+            event.preventDefault();
+            if (!validateForm()) return;
+            
+            document.querySelectorAll('.result-block').forEach(block => block.classList.remove('expanded'));
+            const logins = parseFloat(document.getElementById("logins").value) || 0;
+            const mlapDisbursement = parseFloat(document.getElementById("mlapDisbursement").value) || 0;
+            const coLendingDisbursement = parseFloat(document.getElementById("coLendingDisbursement").value) || 0;
+            const mlapTarget = parseFloat(document.getElementById("mlapTarget").value) || 0;
+            const disbursementConsidered = parseFloat(document.getElementById("disbursementConsidered").value) || 0;
+            const targetAchievement = parseFloat(document.getElementById("targetAchievement").value) || 0;
+            const weightedPF = parseFloat(document.getElementById("weightedPF").value) || 0;
+            const weightedInsurance = parseFloat(document.getElementById("weightedInsurance").value) || 0;
+            const financialBounce = parseFloat(document.getElementById("financialBounce").value) || 0;
+            const cancellationAmount = parseFloat(document.getElementById("cancellationAmount").value) || 0;
+            const weightedROI = parseFloat(document.getElementById("weightedROI").value) || 0;
+            
+            const baseIncentive = calculateBaseIncentive(targetAchievement, disbursementConsidered);
+            const loginIncentive = calculateLoginIncentive(logins);
+            // MODIFIED: Pass mlapDisbursement to the function
+            const additionalIncentiveBreakdown = calculateAdditionalIncentive(baseIncentive, weightedPF, weightedInsurance, financialBounce, cancellationAmount, weightedROI, disbursementConsidered, targetAchievement, mlapDisbursement);
+            const totalIncentive = baseIncentive + loginIncentive + additionalIncentiveBreakdown.total;
+            
+            let achievementDetailsText = "";
+            const mlapAchievement = mlapTarget > 0 ? (mlapDisbursement / mlapTarget) * 100 : 0;
+            if (mlapTarget > 0) {
+                if (mlapAchievement >= 85) achievementDetailsText = `MLAP achievement of ${mlapAchievement.toFixed(1)}% is ≥ 85%, so 20% of co-lending disbursement is added to the total considered for incentive calculation.`;
+                else achievementDetailsText = `MLAP achievement of ${mlapAchievement.toFixed(1)}% is < 85%, so only MLAP disbursement is considered.`;
+            } else {
+                achievementDetailsText = "No target has been set.";
+            }
+            let baseIncentiveDetailsText = "";
+            const disbursementInRupees = disbursementConsidered * 100000;
+            const minimumIncentive = 8000;
+            if (targetAchievement < 85) {
+                baseIncentiveDetailsText = "Target achievement is below 85%, so no base incentive is earned.";
+            } else if (targetAchievement >= 85 && targetAchievement < 100) {
+                baseIncentiveDetailsText = "Achievement is between 85-99.99%, earning a flat incentive of Rs 8,000.";
+            } else {
+                let calculatedAmount = 0;
+                let percentage = 0;
+                let slab = "";
+                if (targetAchievement >= 100 && targetAchievement < 120) {
+                    percentage = 0.10;
+                    slab = "100-119.99%";
+                    calculatedAmount = disbursementInRupees * 0.001;
+                } else if (targetAchievement >= 120 && targetAchievement < 150) {
+                    percentage = 0.20;
+                    slab = "120-149.99%";
+                    calculatedAmount = disbursementInRupees * 0.002;
+                } else if (targetAchievement >= 150 && targetAchievement < 175) {
+                    percentage = 0.25;
+                    slab = "150-174.99%";
+                    calculatedAmount = disbursementInRupees * 0.0025;
+                } else if (targetAchievement >= 175) {
+                    percentage = 0.30;
+                    slab = ">=175%";
+                    calculatedAmount = disbursementInRupees * 0.003;
+                }
+                if (baseIncentive === minimumIncentive && calculatedAmount < minimumIncentive) {
+                    baseIncentiveDetailsText = `In the ${slab} slab, the calculation at ${percentage}% (${formatCurrency(calculatedAmount)}) is less than the minimum. The minimum incentive of ${formatCurrency(minimumIncentive)} is applied.`;
+                } else {
+                    baseIncentiveDetailsText = `In the ${slab} slab, the calculation at ${percentage}% (${formatCurrency(calculatedAmount)}) is applied, as it's greater than or equal to the minimum of ${formatCurrency(minimumIncentive)}.`;
+                }
+            }
+            let loginIncentiveDetailsText = "";
+            if (logins >= 8) loginIncentiveDetailsText = `Maximum incentive for ${logins} logins (≥ 8).`;
+            else if (logins === 7) loginIncentiveDetailsText = `Incentive for 7 logins.`;
+            else if (logins === 6) loginIncentiveDetailsText = `Incentive for 6 logins.`;
+            else loginIncentiveDetailsText = `No incentive for ${logins} logins (< 6).`;
+            
+            document.getElementById("achievementDisplay").textContent = `${targetAchievement.toFixed(1)}%`;
+            document.getElementById("baseIncentive").textContent = formatCurrency(baseIncentive);
+            document.getElementById("loginIncentive").textContent = formatCurrency(loginIncentive);
+            document.getElementById("additionalIncentive").textContent = formatCurrency(additionalIncentiveBreakdown.total);
+            document.getElementById("totalIncentive").textContent = formatCurrency(totalIncentive);
+            document.getElementById("achievementDetails").textContent = achievementDetailsText;
+            document.getElementById("baseIncentiveDetails").textContent = baseIncentiveDetailsText;
+            document.getElementById("loginIncentiveDetails").textContent = loginIncentiveDetailsText;
+            document.getElementById("pfIncentive").textContent = formatCurrency(additionalIncentiveBreakdown.pfIncentive);
+            document.getElementById("insuranceIncentive").textContent = formatCurrency(additionalIncentiveBreakdown.insuranceIncentive);
+            document.getElementById("bounceImpact").textContent = formatCurrency(additionalIncentiveBreakdown.bounceImpact);
+            document.getElementById("cancellationImpact").textContent = formatCurrency(additionalIncentiveBreakdown.cancellationImpact);
+            document.getElementById("roiImpact").textContent = formatCurrency(additionalIncentiveBreakdown.roiImpact);
+            
+            document.getElementById("results").classList.add("show");
+        }
+        
+        function resetCalculator() {
+             document.getElementById("incentiveForm").reset();
+             document.getElementById("results").classList.remove("show");
+             clearErrors();
+             updateTarget();
+             document.querySelector('.header').scrollIntoView();
+        }
+        // --- Event Listeners ---
+        document.getElementById("incentiveForm").addEventListener("submit", calculateIncentives);
+        document.getElementById("recalculateBtn").addEventListener("click", resetCalculator);
+        document.querySelectorAll('.result-item-main').forEach(header => {
+            header.addEventListener('click', () => header.parentElement.classList.toggle('expanded'));
+        });
+        document.getElementById("designation").addEventListener("change", updateTarget);
+        document.getElementById("tier").addEventListener("change", updateTarget);
+        document.getElementById("mlapDisbursement").addEventListener("input", updateDisbursementConsidered);
+        document.getElementById("coLendingDisbursement").addEventListener("input", updateDisbursementConsidered);
+        updateTarget();
+        // --- Simplified Alert Logic ---
+        const infoIcons = document.querySelectorAll('.info-icon');
+        infoIcons.forEach(icon => {
+            icon.addEventListener('click', () => {
+                const info = icon.getAttribute('data-info');
+                if (info) {
+                    alert(info);
+                }
+            });
+        });
+        
+    </script>
+</body>
+</html>
